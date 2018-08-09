@@ -1,0 +1,138 @@
+<html>
+	<head>
+		
+		<style>
+			
+		</style>
+	</head>
+	<body style="background-color:black">
+		<div style="width=100%;text-align: center">
+			<canvas height="1000px" width="1000px" style=" display: inline;" id="ghost"></canvas>
+			<script>
+				var canvas = document.getElementById("ghost");
+				var ctx = canvas.getContext("2d");
+				
+
+				
+				new Ghost("cyan",300,300,300);
+				
+				
+				function BossGhost(color,x,y,radius) {	
+					var _this = this;
+					this.initialHeight1 = radius * 1.6667;
+					this.initialHeight2 = radius * 1.1915
+					this.height1 = _this.initialHeight1;
+					this.height2 = _this.initialHeight2;
+					this.r = 255;
+					this.g = 255;
+					this.b = 255;
+					this.changingColors = "rgb("+_this.r+","+_this.g+","+_this.b+")";
+					this.firstCycle = true;
+					this.secondCycle = false;
+					this.thirdCycle = false;
+					this.fourthCycle = false;
+					
+					this.colorTimer = setInterval(function() {
+						if (_this.firstCycle == true){
+							if (_this.r <= 255 && _this.r > 0) {
+								_this.r -= 1;
+								console.log("1");
+							} 
+							if (_this.r == 0 && _this.g <=255 && _this.g > 0) {
+								_this.g -=1;
+								console.log("2");
+							}if (_this.g == 0 && _this.b <=255 && _this.b > 0) {
+								_this.b -=1;
+								console.log("3");
+							}
+							if (_this.r == 0 && _this.g == 0 && _this.b == 0) {
+								_this.firstCycle = false;
+								_this.secondCycle = true;
+								console.log("false");
+							}
+						}
+						if (_this.secondCycle == true) {
+							console.log("secondcycle");
+							if (_this.r >= 0 && _this.r < 255 && _this.b == 0 &&_this.g ==0) {	
+								console.log("red");
+								_this.r +=  1;
+							} 
+							if (_this.r == 255 && _this.g >= 0 && _this.g < 255) {
+								_this.g += 1;
+							}
+							if (_this.g == 255 && _this.b >=0 && _this.b < 255) {
+								_this.b += 1;
+							}
+							if (_this.r == 255 && _this.g == 255 && _this.b == 255) {
+								_this.secondCycle = false;
+								_this.thirdCycle = true;
+							}
+						}
+						if (_this.thirdCycle == true) {
+							console.log("thirdcycle");
+							if (_this.r <=255 && _this.r >0) {
+								_this.r -=1;
+							} if (_this.b <=255 && _this.b>0 && _this.r == 0) {
+								_this.b -=1;
+							} if (_this.g <=255 && _this.g>0 && _this.b == 0) {
+								_this.g -=1;
+							} if (_this.r == 0 && _this.g == 0 && _this.b == 0) {
+								_this.fourthCycle = true;
+								_this.thirdCycle = false;
+							}	
+						}
+						if (_this.fourthCycle == true) {
+							if (_this.r >= 0 && _this.r < 255) {
+								_this.r += 1;
+								_this.g += 1;
+								_this.b += 1;
+							}
+							if (_this.r == 255 & _this.g == 255 && _this.b == 255) {
+								_this.fourthCycle = false;
+								_this.firstCycle = true;
+							}
+						}
+						
+						_this.changingColors = "rgb("+_this.r+","+_this.g+","+_this.b+")";
+					},1);
+					
+					this.drawGhost = function(color,x,y,radius) {
+						
+						
+						ctx.fillStyle = _this.changingColors;
+						console.log(_this.changingColors);
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						ctx.beginPath();
+						ctx.arc(x,y,radius,0,Math.PI, true);
+						var offset = radius/3;
+						ctx.lineTo(x-radius,y+_this.height1);
+						ctx.lineTo(x-(2*offset),y+_this.height2);
+						ctx.lineTo(x-offset,y+_this.height1);
+						ctx.lineTo(x,y+_this.height2);
+						ctx.lineTo(x+offset,y+_this.height1);
+						ctx.lineTo(x+(2*offset),y+_this.height2);
+						ctx.lineTo(x+radius,y+_this.height1);
+						ctx.fill();
+					}
+					
+					this.timer = setInterval(function(){
+						_this.drawGhost(color,x,y,radius);
+						if (_this.height1 == _this.initialHeight1) {
+							_this.height1 = _this.initialHeight2;
+						}else if (_this.height1 == _this.initialHeight2){
+							_this.height1 = _this.initialHeight1;
+						}
+						
+						 if (_this.height2 == _this.initialHeight1) {
+							_this.height2 = _this.initialHeight2;
+						} else if (_this.height2 == _this.initialHeight2){
+							_this.height2 = _this.initialHeight1;
+						}
+					},100);
+				}
+				
+				
+			</script>
+		</div>
+	</body>
+</html>

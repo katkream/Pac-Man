@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+    <head>
+        <title>Pac-Man</title>
+    </head>
+    <!-- CSSs -->
+    <link rel="stylesheet" href="css/index.css">
+    <!-- BODY -->
+    <body>
+        <!-- game_wrapper: contains the main canvas which is used to run the game -->
+        <div id="game_wrapper" class="center_div">
+            <canvas id="game_canvas" style="background-color:black;" width="1280px" height="720px"></canvas>
+            <div id = "scoreBox"> Score </div>
+            <div id = "bombCount"> Bombs: </div>
+            <div id = "lifeCount"> Lives: </div>
+        </div>
+        <!-- button_wrapper: contains the a div that changes from display none to inital, and a button within that div -->
+        <div id="button_wrapper" class="center_div">
+            <div id="opacity_div" class="center_div">
+                <input type="button" id="game_start" class="center_div" value="START" onclick="hide_div(this);start();">
+                <input id="instructionsButton" value="INSTRUCTIONS" class="center_div" type="button" onclick="showDiv('instructions')"/>
+            </div>
+            <center><div id="logo" class="center_div"></div></center>
+        </div>
+        <div id="instructions">
+			<fieldset>
+			<legend><h1>INSTRUCTIONS</h1></legend>
+			<ul>
+			<li>USE IN MOZILLA FIREFOX</li>
+			<li>Use the arrow keys in order to move Pacman.</li>
+			<li>Avoid the ghosts to survive.</li>
+			<li>Eat dots and powerups to gain points. Dots are worth 1 point and powerups are worth 50 points.</li>
+			<li>The walls will disappear and the boss will appear when all the dots and powerups are eaten.</li>
+			<li>You can only pick up and hold one bomb at a time. Drop bombs by pressing space. Use the bombs to kill the boss or to destroy walls.</li>
+			
+			
+			</ul>
+			</fieldset>
+			<input id="backButton" value="BACK" class="center_div" type="button" onclick="hideDiv('instructions')"/>
+        </div>
+        <img id="gameover" src="gameover.jpg" style="display:none;">
+    </body>
+    <!-- SCRIPTS 
+        On bottom because canvas isn't read on top
+    -->
+    <script src="scripts/draw.js" type="text/javascript"></script>
+    <script src="scripts/index.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        var canvas = document.getElementById("game_canvas");
+        var ctx = canvas.getContext("2d")
+        var timer;
+        var button = "";
+        var globalBombX = "";
+        var globalBombY = "";
+        window.onkeydown = checkKey;
+        window.onload = function() {
+				$("#button_wrapper").fadeIn(2000); // INITIAL FADE IN ------------------------------------------------------------------------------------------------------------------------------------------> 
+		}
+
+        function checkKey(e) {
+
+            e = e || window.event;
+            if (e.keyCode == '38' && player.yDirection != -1) {
+                //player.settings(-90, 0, -1)
+                button = "up";
+            }
+            else if (e.keyCode == '40' && player.yDirection != 1) {
+                //player_settings(90, 0, 1)
+                button = "down";
+            }
+            else if (e.keyCode == '37' && player.xDirection != -1) {
+                //player_settings(180, -1, 0)
+                button = "west";
+            }
+            else if (e.keyCode == '39' && player.xDirection != 1) {
+                //player_settings(0, 1, 0)
+                button = "east";
+            }
+            if(e.keyCode == "13"){
+        
+                if((document.getElementById('opacity_div').style.display !== "none")){
+                    hide_div(document.getElementById('game_start'));
+                    start();
+                }
+            }
+
+            if (e.keyCode == "32"){
+                console.log(player.y)
+                console.log([player.x])
+                if(player.bombCounter == 1){
+                    spawnBombCounter -= 1;
+                    map[Math.round(player.y)][Math.round(player.x)].bomb = true
+                    map[Math.round(player.y)][Math.round(player.x)].bombText = 1;
+                    //map[Math.round(player.y)][Math.round(player.x)].playerSpawned = true;
+                    var bombX = Math.round(player.y);
+                    var bombY = Math.round(player.x);
+                    map[bombX][bombY].bombUsed = true;
+                    player.bombCounter = 0;
+
+
+                    player.bombUsed = true;
+                    var bombTextInterval = setInterval(function(){
+                            console.log()
+                            if(map[Math.round(bombX)][Math.round(bombY)].bombText > 0){
+                               
+                                map[Math.round(bombX)][Math.round(bombY)].bombText -= 1;
+                            }
+                            if(map[Math.round(bombX)][Math.round(bombY)].bombText == 0){
+                                map[bombX][bombY].bomb = false;
+                                map[bombX][bombY].detonate = true;
+                                map[bombX][bombY].bombUsed = false;
+                                map[bombX][bombY].playerSpawned = true;
+                                clearInterval(bombTextInterval);
+                                map[bombX][bombY].colorFade = 1;
+                                var bombEffectInterval = setInterval(function(){
+                                    if(map[bombX][bombY].colorFade > 0){
+                                        map[bombX][bombY].colorFade -= 0.01;
+                                        for(var i =0; i<3; i++){
+               
+                                            for(var j= 0; j<3; j++){
+                                                if(map[(bombX-1+i)][(bombY-1+j)].indestructable == undefined){
+                                                    map[(bombX-1+i)][(bombY-1+j)].wall = undefined;
+                                                    //redraw();
+                                                }
+                                                if(Math.round(player.y) == (bombX-1+i) && Math.round(player.x) == (bombY-1+j)){
+                                                    player.dead = true;
+                                                    //alert("player dead");
+                                                }
+                                                for(var c = 0; c < ghostArray.length; c++){
+                                                    if(Math.round(ghostArray[i].y) == (bombX-1+i) && Math.round(ghostArray[i].x) == (bombY-1+j)){
+                                                        player.score += 200;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }else {
+                                        clearInterval(bombEffectInterval);
+                                    }
+                                    //alert(map[bombX][bombY].colorFade)
+                                },10)
+                                
+                            }
+
+                    },1000)
+                }
+            }
+        }
+        function player_settings(degree, xDir, yDir, flip){
+            player.stopped = false;
+            // right arrow
+            if(flip == true){
+                player.yDirection = yDir;
+                player.xDirection = xDir;
+                player.degree = degree;
+            }else{
+                player.x = Math.round(player.x)
+                player.y = Math.round(player.y)
+                player.yDirection = yDir;
+                player.xDirection = xDir;
+                player.degree = degree;
+            }
+        }
+        function showDiv(elem) {
+				document.getElementById(elem).style.display = "block";
+				document.getElementById("button_wrapper").style.display = "none";
+		}
+		function hideDiv(elem) {
+			document.getElementById(elem).style.display = "none";
+			document.getElementById("button_wrapper").style.display = "block";
+		}
+    </script>
+</html>
